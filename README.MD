@@ -2,7 +2,7 @@
 
  1. Open terminal and run:
 
-    ```>  expo init```
+    ```>  expo start```
 
  2. Scan the QR code displayed on the terminal (Expo app must be installed on the phone).
 
