@@ -9,35 +9,100 @@ import {
   TextInput,
   Keyboard,
 } from 'react-native';
+import { Icon } from 'react-native-elements'
 import Task from './components/Task';
 
-export default function App() {
-  const [task, setTask] = useState();
-  const [taskItems, setTaskItems] = useState([]);
+const initialTasks = [
+  {
+    text: 'abc',
+    selected: false,
+  },
+  {
+    text: 'abc',
+    selected: false,
+  },
+]
 
-  const handleAddTask = () => {
+export default function App() {
+  const [taskText, setTaskText] = useState('');
+  const [taskItems, setTaskItems] = useState(initialTasks);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const anySelected = () => taskItems.filter((item) => item.selected).length > 0
+
+  const addTask = () => {
     Keyboard.dismiss()
-    setTaskItems(previousTaskItems => [...previousTaskItems, task])
-    setTask(null)
+    setTaskItems(previousTaskItems => [
+      ...previousTaskItems, 
+      {
+        text: taskText,
+        selected: false,
+      },
+    ])
+    setTaskText('')
   }
 
-  const completeTask = (index) => {
-    let itemsCopy = [...taskItems]
-    itemsCopy.splice(index, 1)
+  const handleMainButtonClick = () => {
+    if (anySelected())
+      deleteSelectedItems()
+    else if (taskText)
+      addTask()
+  }
+
+  const toggleSelectTask = (index) => {
+    const itemsCopy = taskItems.map((task, i) => {
+      if (i === index) 
+        return { ...task, selected: !task.selected }
+      else
+        return task
+    })
     setTaskItems(itemsCopy)
   }
 
+  const deleteSelectedItems = () => {
+    let itemsCopy = [...taskItems]
+    const notSelectedItems = itemsCopy.filter(item => !item.selected)
+    setTaskItems(notSelectedItems)
+  }
+
+  const toggleTheme = () => {
+    setDarkMode(!darkMode)
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={darkMode ? styles.containerDark : styles.containerLight}>
       <View style={styles.tasksWrapper}>
-        <Text style={styles.sectionTitle}>
-          Today's tasks
-        </Text>
+        <View style={styles.header}>
+          <Text style={darkMode ? styles.sectionTitleDark : styles.sectionTitleLight}>
+            Today's tasks
+          </Text>
+          <TouchableOpacity onPress={() => toggleTheme()}>
+            {
+              darkMode ?
+                <Icon 
+                  name='ios-sunny-outline'
+                  type='ionicon'
+                  color={'#FFF'}
+                />
+                :
+                <Icon 
+                  name='ios-moon-outline'
+                  type='ionicon'
+                  color={'#000'}
+                />
+            }
+          </TouchableOpacity>
+        </View>
         <View styles={styles.items}>
           {
-            taskItems.map((item, index) =>
-              <TouchableOpacity key={index} onPress={() => completeTask(index)}>
-                <Task key={index} message={item} />
+            taskItems.map((task, index) =>
+              <TouchableOpacity key={index} onPress={() => toggleSelectTask(index)}>
+                <Task 
+                  key={index}
+                  message={task.text}
+                  selected={task.selected}
+                  darkMode={darkMode}
+                />
               </TouchableOpacity>
             )
           }
@@ -48,16 +113,28 @@ export default function App() {
         style={styles.writeTaskWrapper}
       >
         <TextInput
-          style={styles.input}
+          style={darkMode ? styles.inputDark : styles.inputLight}
           placeholder={'Write a task'}
-          value={task}
-          onChangeText={text => setTask(text)}
+          value={taskText}
+          onChangeText={text => setTaskText(text)}
+          placeholderTextColor={darkMode ? '#6F6F6F' : '#C0C0C0'}
         />
-        <TouchableOpacity onPress={() => handleAddTask()}>
-          <View style={styles.addWrapper}>
-            <Text style={styles.addText}>
-              +
-            </Text>
+        <TouchableOpacity 
+          onPress={() => handleMainButtonClick()}
+        >
+          <View style={darkMode ? styles.addWrapperDark : styles.addWrapperLight}>
+            {
+              anySelected() ?
+                <Icon 
+                  name='trash-bin-outline'
+                  type='ionicon'
+                  color={'#AD0303'}
+                />
+                :
+                <Text style={darkMode ? styles.addTextDark : styles.addTextLight}>
+                  +
+                </Text>
+            }
           </View>
         </TouchableOpacity>
       </KeyboardAvoidingView>
@@ -66,20 +143,28 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerLight: {
     flex: 1,
     backgroundColor: '#E8EAED',
+  },
+  containerDark: {
+    flex: 1,
+    backgroundColor: '#121212',
   },
   tasksWrapper: {
     paddingTop: 80,
     paddingHorizontal: 20,
   },
-  sectionTitle: {
+  sectionTitleLight: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    color: '#000',
   },
-  items: {},
+  sectionTitleDark: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
   writeTaskWrapper: {
     position: 'absolute',
     bottom: 60,
@@ -88,7 +173,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  input: {
+  inputLight: {
     width: 250,
     paddingVertical: 15,
     paddingHorizontal: 15,
@@ -96,8 +181,19 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderColor: '#C0C0C0',
     borderWidth: 1,
+    color: '#000',
   },
-  addWrapper: {
+  inputDark: {
+    width: 250,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    backgroundColor: '#1F1B24',
+    borderRadius: 60,
+    borderColor: '#C0C0C0',
+    borderWidth: 1,
+    color: '#FFF',
+  },
+  addWrapperLight: {
     width: 60,
     height: 60,
     backgroundColor: '#FFF',
@@ -105,7 +201,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderColor: '#C0C0C0',
-    borderWidth: 1
+    borderWidth: 1,
+    color: '#000',
   },
-  addText: {},
+  addWrapperDark: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#1F1B24',
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#C0C0C0',
+    borderWidth: 1,
+    color: '#FFF',
+  },
+  addTextLight: {
+    color: '#000',
+    fontSize: 18,
+  },
+  addTextDark: {
+    color: '#FFF'
+  },
+  header: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
 });
