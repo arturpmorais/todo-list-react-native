@@ -9,64 +9,52 @@ import {
   TextInput,
   Keyboard,
 } from 'react-native';
-import { Icon } from 'react-native-elements'
+import { Icon } from 'react-native-elements';
 import Task from './components/Task';
-
-const initialTasks = [
-  {
-    text: 'abc',
-    selected: false,
-  },
-  {
-    text: 'abc',
-    selected: false,
-  },
-]
 
 export default function App() {
   const [taskText, setTaskText] = useState('');
-  const [taskItems, setTaskItems] = useState(initialTasks);
+  const [taskItems, setTaskItems] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
-  const anySelected = () => taskItems.filter((item) => item.selected).length > 0
+  const anySelected = () => taskItems.filter((item) => item.selected).length > 0;
 
   const addTask = () => {
-    Keyboard.dismiss()
+    Keyboard.dismiss();
     setTaskItems(previousTaskItems => [
-      ...previousTaskItems, 
+      ...previousTaskItems,
       {
         text: taskText,
         selected: false,
       },
-    ])
-    setTaskText('')
+    ]);
+    setTaskText('');
   }
 
   const handleMainButtonClick = () => {
     if (anySelected())
-      deleteSelectedItems()
+      deleteSelectedItems();
     else if (taskText)
-      addTask()
+      addTask();
   }
 
   const toggleSelectTask = (index) => {
     const itemsCopy = taskItems.map((task, i) => {
-      if (i === index) 
-        return { ...task, selected: !task.selected }
+      if (i === index)
+        return { ...task, selected: !task.selected };
       else
-        return task
+        return task;
     })
-    setTaskItems(itemsCopy)
+    setTaskItems(itemsCopy);
   }
 
   const deleteSelectedItems = () => {
-    let itemsCopy = [...taskItems]
-    const notSelectedItems = itemsCopy.filter(item => !item.selected)
-    setTaskItems(notSelectedItems)
+    const notSelectedItems = taskItems.filter(item => !item.selected);
+    setTaskItems(notSelectedItems);
   }
 
   const toggleTheme = () => {
-    setDarkMode(!darkMode)
+    setDarkMode(!darkMode);
   }
 
   return (
@@ -79,13 +67,13 @@ export default function App() {
           <TouchableOpacity onPress={() => toggleTheme()}>
             {
               darkMode ?
-                <Icon 
+                <Icon
                   name='ios-sunny-outline'
                   type='ionicon'
                   color={'#FFF'}
                 />
                 :
-                <Icon 
+                <Icon
                   name='ios-moon-outline'
                   type='ionicon'
                   color={'#000'}
@@ -97,7 +85,7 @@ export default function App() {
           {
             taskItems.map((task, index) =>
               <TouchableOpacity key={index} onPress={() => toggleSelectTask(index)}>
-                <Task 
+                <Task
                   key={index}
                   message={task.text}
                   selected={task.selected}
@@ -119,13 +107,13 @@ export default function App() {
           onChangeText={text => setTaskText(text)}
           placeholderTextColor={darkMode ? '#6F6F6F' : '#C0C0C0'}
         />
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => handleMainButtonClick()}
         >
           <View style={darkMode ? styles.addWrapperDark : styles.addWrapperLight}>
             {
               anySelected() ?
-                <Icon 
+                <Icon
                   name='trash-bin-outline'
                   type='ionicon'
                   color={'#AD0303'}
